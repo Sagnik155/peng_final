@@ -1,0 +1,11 @@
+# Environments
+.venv/
+__pycache__/
+
+# Datasets and Model Weights
+data_main/
+*.pth
+*.pkl
+
+# OS Files
+.DS_Store

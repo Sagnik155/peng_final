@@ -1,0 +1,29 @@
+# ... (Keep all the existing functions like evaluate_full_case above this)
+
+if __name__ == "__main__":
+    base_dir = Path(__file__).resolve().parent.parent.parent
+    case_id = "001"  # Update this to test different cases
+    
+    pred_path = base_dir / "data_main" / "predictions" / case_id / "pelvic-fracture-segmentation.mha"
+    gt_path = base_dir / "data_main" / "raw" / case_id / "label.mha"
+    
+    if pred_path.exists() and gt_path.exists():
+        # Load the prediction and ground truth
+        pred_arr, metadata = read_mha(pred_path)
+        gt_arr, _ = read_mha(gt_path)
+        
+        # Extract physical spacing for accurate millimeter distances
+        spacing = metadata.get('spacing', (1.0, 1.0, 1.0))
+        
+        print(f"--- Official PENGWIN Evaluation Results for Case {case_id} ---")
+        metrics = evaluate_full_case(pred_arr, gt_arr, spacing)
+        
+        for metric, value in metrics.items():
+            if np.isinf(value):
+                print(f"{metric}: Infinity (No matching fragments found)")
+            elif "HD95" in metric or "ASSD" in metric:
+                print(f"{metric}: {value:.2f} mm")
+            else:
+                print(f"{metric}: {value:.4f}")
+    else:
+        print(f"Prediction or Ground Truth file missing for case {case_id}.")
