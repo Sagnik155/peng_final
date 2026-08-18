@@ -4,11 +4,9 @@ import SimpleITK as sitk
 import sys
 import os
 
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from shared.io_utils import read_mha
 
 def compute_dice(pred_mask: np.ndarray, gt_mask: np.ndarray) -> float:
-    """Calculates the Dice Similarity Coefficient between two boolean masks."""
     intersection = np.logical_and(pred_mask, gt_mask).sum()
     union = pred_mask.sum() + gt_mask.sum()
     if union == 0:
@@ -16,21 +14,16 @@ def compute_dice(pred_mask: np.ndarray, gt_mask: np.ndarray) -> float:
     return 2.0 * float(intersection) / float(union)
 
 def evaluate_case(pred_array: np.ndarray, gt_array: np.ndarray):
-    """
-    Evaluates a single case for Fracture Dice, Merge Errors, and Split Errors.
-    """
     pred_ids = np.unique(pred_array)
     pred_ids = pred_ids[pred_ids != 0]
     
     gt_ids = np.unique(gt_array)
     gt_ids = gt_ids[gt_ids != 0]
 
-    # 1. Fracture Dice (Average across all matched ground truth fragments)
     dice_scores = []
     for gt_id in gt_ids:
         gt_mask = (gt_array == gt_id)
-        
-        # Find the predicted fragment that overlaps the most with this GT fragment
+
         best_dice = 0.0
         for pred_id in pred_ids:
             pred_mask = (pred_array == pred_id)
@@ -42,11 +35,9 @@ def evaluate_case(pred_array: np.ndarray, gt_array: np.ndarray):
         
     avg_fracture_dice = np.mean(dice_scores) if dice_scores else 0.0
 
-    # 2. Merge & Split Error Detection
     merge_errors = 0
     split_errors = 0
-    
-    # Merge Error: One predicted fragment overlaps with multiple GT fragments
+
     for pred_id in pred_ids:
         pred_mask = (pred_array == pred_id)
         overlapped_gt_fragments = 0
@@ -57,7 +48,6 @@ def evaluate_case(pred_array: np.ndarray, gt_array: np.ndarray):
         if overlapped_gt_fragments > 1:
             merge_errors += (overlapped_gt_fragments - 1)
 
-    # Split Error: Multiple predicted fragments overlap with a single GT fragment
     for gt_id in gt_ids:
         gt_mask = (gt_array == gt_id)
         overlapped_pred_fragments = 0
