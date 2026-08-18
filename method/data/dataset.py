@@ -12,7 +12,6 @@ from shared.click_parser import parse_clicks
 from roi.roi_config import ROI_SHAPE, CLICK_CHANNEL_VALUE
 
 def normalize_ct(img_roi: np.ndarray) -> np.ndarray:
-    """Clips CT Hounsfield Units to bone window [-1000, 1000] and scales to [0, 1]."""
     img_roi = np.clip(img_roi, -1000, 1000)
     img_roi = (img_roi + 1000) / 2000.0
     return img_roi.astype(np.float32)
@@ -25,7 +24,6 @@ class PengwinFragmentDataset(Dataset):
         self.samples = self._build_index()
 
     def _build_index(self):
-        """Creates a flat list of all valid clicks across all provided cases."""
         samples = []
         for case_id in self.case_ids:
             click_path = config.CLICKS_DIR / self.click_strategy / case_id / "peripelvic-fragment-clicks.json"
@@ -41,7 +39,6 @@ class PengwinFragmentDataset(Dataset):
         return samples
 
     def _extract_roi(self, array: np.ndarray, center: tuple[int, int, int]):
-        """Crops the array to ROI_SHAPE centered around the click, with zero-padding if needed."""
         z, y, x = center
         dz, dy, dx = ROI_SHAPE
         
@@ -83,15 +80,12 @@ class PengwinFragmentDataset(Dataset):
         x = max(0, min(click["x"], img_array.shape[2] - 1))
         center = (z, y, x)
         
-        # Extract & normalize Image ROI
         img_roi = self._extract_roi(img_array, center)
         img_roi_normalized = normalize_ct(img_roi)
         
-        # Create Click Channel ROI
         click_roi = np.zeros(ROI_SHAPE, dtype=np.float32)
         click_roi[ROI_SHAPE[0]//2, ROI_SHAPE[1]//2, ROI_SHAPE[2]//2] = CLICK_CHANNEL_VALUE
         
-        # Stack into 2-channel tensor (C, Z, Y, X)
         x_tensor = torch.from_numpy(np.stack([img_roi_normalized, click_roi], axis=0)).float()
         
         result = {"input": x_tensor, "case_id": case_id, "anatomy": click["anatomy"]}
