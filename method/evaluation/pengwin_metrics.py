@@ -10,24 +10,19 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from shared.io_utils import read_mha
 
 def extract_surface(mask: np.ndarray) -> np.ndarray:
-    """Extracts the outer boundary voxels of a binary mask."""
     eroded = binary_erosion(mask, iterations=1)
     boundary = np.logical_xor(mask, eroded)
     return np.argwhere(boundary)
 
 def compute_surface_distances(pred_mask: np.ndarray, gt_mask: np.ndarray, spacing: tuple) -> tuple:
-    """Calculates all point-to-point boundary distances between two masks in millimeters."""
     surf_pred = extract_surface(pred_mask)
     surf_gt = extract_surface(gt_mask)
     
     if len(surf_pred) == 0 or len(surf_gt) == 0:
         return np.array([np.inf]), np.array([np.inf])
-        
-    # Scale voxel coordinates by physical spacing (z, y, x)
+
     surf_pred_mm = surf_pred * np.array(spacing)
     surf_gt_mm = surf_gt * np.array(spacing)
-    
-    # KD-Tree for fast nearest-neighbor distance calculation
     tree_pred = cKDTree(surf_pred_mm)
     tree_gt = cKDTree(surf_gt_mm)
     
@@ -37,7 +32,6 @@ def compute_surface_distances(pred_mask: np.ndarray, gt_mask: np.ndarray, spacin
     return dists_pred_to_gt, dists_gt_to_pred
 
 def compute_metrics(pred_mask: np.ndarray, gt_mask: np.ndarray, spacing: tuple) -> dict:
-    """Computes IoU, HD95, and ASSD for a matched prediction and ground truth fragment."""
     intersection = np.logical_and(pred_mask, gt_mask).sum()
     union = np.logical_or(pred_mask, gt_mask).sum()
     iou = float(intersection) / float(union) if union > 0 else 0.0
@@ -54,7 +48,6 @@ def compute_metrics(pred_mask: np.ndarray, gt_mask: np.ndarray, spacing: tuple) 
     return {"IoU": iou, "HD95": hd95, "ASSD": assd}
 
 def evaluate_full_case(pred_array: np.ndarray, gt_array: np.ndarray, spacing: tuple) -> dict:
-    """Evaluates all fragments in a volume and averages the results."""
     pred_ids = np.unique(pred_array)[1:] # Skip background 0
     gt_ids = np.unique(gt_array)[1:]
     
