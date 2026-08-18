@@ -7,10 +7,8 @@ class DiceLoss(nn.Module):
         self.smooth = smooth
 
     def forward(self, logits, targets):
-        # Apply sigmoid to get probabilities
         probs = torch.sigmoid(logits)
-        
-        # Flatten tensors for calculation
+
         probs = probs.view(-1)
         targets = targets.view(-1)
         
@@ -26,8 +24,6 @@ class FragmentLoss(nn.Module):
         self.dice = DiceLoss()
 
     def forward(self, logits, targets):
-        # We use Channel 0 for the main prediction.
-        # Channel 1 is reserved for the upcoming 20mm physical boundary loss.
         pred_logits = logits[:, 0:1, ...]
         
         bce_loss = self.bce(pred_logits, targets)
