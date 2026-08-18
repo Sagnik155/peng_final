@@ -2,10 +2,6 @@ import json
 from pathlib import Path
 
 def parse_clicks(json_path: Path) -> list[dict]:
-    """
-    Parses the PENGWIN click JSON.
-    Returns a list of dictionaries containing the coordinate and anatomy name.
-    """
     if not json_path.exists():
         raise FileNotFoundError(f"Click file not found: {json_path}")
 
