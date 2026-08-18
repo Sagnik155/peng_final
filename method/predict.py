@@ -57,6 +57,24 @@ if __name__ == "__main__":
     base_dir = Path(__file__).resolve().parent.parent
     test_model_path = base_dir / "method" / "fragment_seg" / "fragment_unet_test.pth"
     output_directory = base_dir / "data_main" / "predictions"
+    raw_directory = base_dir / "data_main" / "raw"
     
-    # Test on a single case
-    run_case_pipeline("001", "uniformly_sampled", test_model_path, output_directory)
+    click_strategy = "uniformly_sampled"
+    
+    if not raw_directory.exists():
+        print(f"Raw directory not found at {raw_directory}")
+        sys.exit(1)
+
+    case_folders = sorted([d.name for d in raw_directory.iterdir() if d.is_dir()])
+    
+    if not case_folders:
+        print("No cases found in the raw directory.")
+    else:
+        print(f"Found {len(case_folders)} cases. Starting batch inference...\n")
+
+        for case_id in case_folders:
+            run_case_pipeline(case_id, click_strategy, test_model_path, output_directory)
+            
+        print("=========================================")
+        print("All cases processed successfully!")
+        print("=========================================")
