@@ -20,7 +20,6 @@ def get_fragment_bounding_box(label_array, target_id):
     )
 
 def run_experiment():
-    # Expanding ROI sizes to catch large pelvic bones
     test_roi_sizes = [64, 96, 128, 160, 192, 256]
     
     results = defaultdict(lambda: defaultdict(list))
@@ -43,8 +42,7 @@ def run_experiment():
         for lab in unique_labels:
             if lab == 0: continue
             bbox = get_fragment_bounding_box(label_array, lab)
-            
-            # Track how big these fragments actually are in voxels
+
             z_len = bbox[1] - bbox[0]
             y_len = bbox[3] - bbox[2]
             x_len = bbox[5] - bbox[4]
@@ -65,11 +63,9 @@ def run_experiment():
 
             for point_info in click_data.get("points", []):
                 coords = point_info["point"]
-                
-                # The PENGWIN JSON natively stores [z, y, x] voxel coordinates
+
                 idx_z, idx_y, idx_x = int(coords[0]), int(coords[1]), int(coords[2])
-                
-                # Safe clamping just in case
+
                 idx_z = max(0, min(idx_z, label_array.shape[0] - 1))
                 idx_y = max(0, min(idx_y, label_array.shape[1] - 1))
                 idx_x = max(0, min(idx_x, label_array.shape[2] - 1))
