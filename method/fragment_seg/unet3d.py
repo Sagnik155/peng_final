@@ -23,14 +23,12 @@ class LightweightFragmentUNet(nn.Module):
         out_channels = 2 (Core Mask + Boundary Mask for dual-head loss)
         """
         super().__init__()
-        
-        # Encoder
+
         self.inc = DoubleConv(in_channels, base_filters)
         self.down1 = nn.Sequential(nn.MaxPool3d(2), DoubleConv(base_filters, base_filters*2))
         self.down2 = nn.Sequential(nn.MaxPool3d(2), DoubleConv(base_filters*2, base_filters*4))
         self.down3 = nn.Sequential(nn.MaxPool3d(2), DoubleConv(base_filters*4, base_filters*8))
-        
-        # Decoder
+
         self.up1 = nn.ConvTranspose3d(base_filters*8, base_filters*4, kernel_size=2, stride=2)
         self.conv_up1 = DoubleConv(base_filters*8, base_filters*4)
         
