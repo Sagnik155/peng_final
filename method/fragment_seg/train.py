@@ -28,7 +28,7 @@ def train_model():
     
     train_loader = DataLoader(
         train_dataset, 
-        batch_size=4, 
+        batch_size=8, 
         shuffle=True, 
         num_workers=4 if device.type != "cpu" else 0,
         pin_memory=is_cuda
@@ -38,7 +38,7 @@ def train_model():
     criterion = FragmentLoss()
     optimizer = optim.Adam(model.parameters(), lr=1e-3)
 
-    epochs = 1  # Set to 50-100 for full convergence
+    epochs = 25
     for epoch in range (epochs):
         model.train()
         epoch_loss = 0.0
