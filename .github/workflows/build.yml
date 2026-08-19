@@ -1,0 +1,33 @@
+name: Build Grand Challenge Container
+
+on:
+  push:
+    branches: [ "main", "master" ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v3
+
+    - name: Free up disk space on GitHub Runner
+      run: |
+        sudo rm -rf /usr/share/dotnet
+        sudo rm -rf /opt/ghc
+        sudo rm -rf "/usr/local/share/boost"
+        sudo rm -rf "$AGENT_TOOLSDIRECTORY"
+
+    - name: Build Docker Image
+      run: docker build -t pengwin-submission .
+
+    - name: Save Docker Image to Tar Archive
+      run: docker save pengwin-submission -o pengwin-submission.tar
+
+    - name: Upload Artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: pengwin-container-archive
+        path: pengwin-submission.tar
+        retention-days: 5
