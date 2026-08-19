@@ -22,12 +22,13 @@ jobs:
     - name: Build Docker Image
       run: docker build -t pengwin-submission .
 
-    - name: Save Docker Image to Tar Archive
-      run: docker save pengwin-submission -o pengwin-submission.tar
+    - name: Save and Compress Docker Image 
+      # We pipe the output directly into gzip to bypass file size limits
+      run: docker save pengwin-submission | gzip > pengwin-submission.tar.gz
 
     - name: Upload Artifact
       uses: actions/upload-artifact@v4
       with:
         name: pengwin-container-archive
-        path: pengwin-submission.tar
+        path: pengwin-submission.tar.gz
         retention-days: 5
